@@ -1,12 +1,14 @@
 """
-An asyncio client that connects to the server, sends a message, and waits for an 'ACK' message before closing the connection.
+An asyncio client that connects to the server, sends a message, and waits
+for an 'ACK' message before closing the connection.
 
 Usage:
-    python async-client.py <HOST> <PORT>
+    python -m test <HOST> <PORT>
 """
 
 import asyncio
 import sys
+
 
 async def run_client(host: str, port: int) -> None:
     reader, writer = await asyncio.open_connection(host, port)
@@ -19,19 +21,21 @@ async def run_client(host: str, port: int) -> None:
 
         if not data:
             raise Exception("Socket closed")
-        
+
         message = data.decode()
         print(f"Received: {message!r}")
-        
-        if message.strip() == 'ACK':
+
+        if message.strip() == "ACK":
             print("Received ACK, closing connection.")
             writer.close()
             await writer.wait_closed()
             break
 
+
 async def main(host: str, port: int):
     client_task = asyncio.create_task(run_client(host, port))
     await client_task
+
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:
