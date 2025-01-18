@@ -19,7 +19,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
     sock.settimeout(1)
 
     sock.connect((host, port))
-    sock.sendall(b"Hello, world")
+    sock.sendall(b"Hello, world\r\n")
     data = sock.recv(1024)
 
 print(f"Received {data!r}")
