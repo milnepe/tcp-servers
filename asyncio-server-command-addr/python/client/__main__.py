@@ -12,6 +12,7 @@ Usage:
 import asyncio
 import sys
 import json
+import uuid
 
 
 async def run_client(host: str, port: int) -> None:
@@ -21,23 +22,41 @@ async def run_client(host: str, port: int) -> None:
         print(f"Failed to connect to server at {host}:{port}: {e}")
         return
 
+    mac = get_mac()
+
     while True:
-        command = input("Enter command (ON, OFF or STOP): ")
-        if command.strip() == "STOP":
+        command_input = input("Enter command [ON, OFF, STOP] optional MAC [00:00:00:00:00:00]: ")
+        parts = command_input.strip().split()
+        command = parts[0]
+        target_mac = parts[1] if len(parts) > 1 else None
+
+        if command == "STOP":
             print("Received STOP, closing connection.")
             # Close the connection
             writer.write(b'')
             await writer.drain()
+            writer.close()
+            await writer.wait_closed()
             break
-        if command.strip() in ["ON", "OFF"]:
-            message = json.dumps({"command": command.strip()})
+        if command in ["ON", "OFF"]:
+            message = {
+                "command": command,
+                "src_addr": mac
+            }
+            if target_mac:
+                message["target_addr"] = target_mac
+
             try:
-                writer.write(message.encode() + b"\r\n")
+                writer.write(json.dumps(message).encode() + b"\r\n")
                 await writer.drain()
             except (BrokenPipeError, ConnectionResetError) as e:
                 print(f"Failed to send message to server: {e}")
                 break
 
+
+def get_mac() -> str:
+    return ':'.join(['{:02x}'.format((uuid.getnode() >> ele) & 0xff)
+    for ele in range(0,8*6,8)][::-1])
 
 async def main(host: str, port: int):
     client_task = asyncio.create_task(run_client(host, port))
