@@ -12,7 +12,8 @@ printf '{"command": "ON", "target_addr": "aa:bb:cc:dd:ee:ff"}\r\n' | nc 127.0.0.
 printf '{"command": "OFF", "target_addr": "aa:bb:cc:dd:ee:ff"}\r\n' | nc 127.0.0.1 65432
 
 Usage:
-    python -m server <HOST> <PORT>
+    python -m server <HOST> <PORT> <LOG_LEVEL>
+    python -m server 127.0.0.1 65432 DEBUG
 """
 
 import logging
