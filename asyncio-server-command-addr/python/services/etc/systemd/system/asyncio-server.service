@@ -1,0 +1,28 @@
+[Unit]
+Description=Asyncio Server
+After=network-online.target
+Wants=network-online.target
+Requires=network-online.target
+
+[Service]
+Type=simple
+User=admin
+Group=admin
+WorkingDirectory=/opt/server
+Environment="PATH=/opt/venv/bin:/usr/local/bin:/usr/bin:/bin"
+
+# Add IP check before starting
+ExecStartPre=/bin/bash -c 'until ip addr show | grep -q 127.0.0.1; do sleep 1; done'
+ExecStartPre=/bin/sleep 5
+ExecStart=/opt/venv/bin/python -m server 127.0.0.1 65432 DEBUG
+
+# Restart configuration
+Restart=on-failure
+RestartSec=10
+StartLimitBurst=3
+StartLimitInterval=60
+RestartForceExitStatus=1
+
+[Install]
+WantedBy=multi-user.target
+
