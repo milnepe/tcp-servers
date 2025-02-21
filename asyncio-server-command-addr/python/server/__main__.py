@@ -15,17 +15,31 @@ Usage:
     python -m server <HOST> <PORT>
 """
 
+import logging
 import sys
 import asyncio
 import json
 from socket import error as SocketError
+
+VERSION = "0.0.1"
+
+logger = logging.getLogger("srv")
+logging.basicConfig()
+
+log_levels = {
+    "CRITICAL": logging.CRITICAL,
+    "ERROR": logging.ERROR,
+    "WARNING": logging.WARNING,
+    "INFO": logging.INFO,
+    "DEBUG": logging.DEBUG,
+}
 
 clients = {}
 
 
 async def handler(reader, writer):
     client_address = writer.get_extra_info("peername")
-    print(f"Client connected: {client_address}")
+    logger.info(f"Client connected: {client_address}")
 
     try:
         while not reader.at_eof():
@@ -33,12 +47,12 @@ async def handler(reader, writer):
             if not data:
                 break
             message = data.decode().strip()
-            print(f"Message from {client_address}: {message}")
+            logger.info(f"Message from {client_address}: {message}")
 
             try:
                 message_json = json.loads(message)
             except json.JSONDecodeError:
-                print(f"Failed to decode JSON message from {client_address}: {message}")
+                logger.info(f"Failed to decode JSON message from {client_address}: {message}")
             src_addr = message_json.get("src_addr")
             command = message_json.get("command")
             target = message_json.get("target_addr")
@@ -55,7 +69,7 @@ async def handler(reader, writer):
                             client_writer.write(command.encode() + b"\r\n")
                             await client_writer.drain()
                         except ConnectionError:
-                            print(f"Connection to {client_writer.get_extra_info('peername')} closed")
+                            logger.info(f"Connection to {client_writer.get_extra_info('peername')} closed")
                 else:
                     # Send the message to all connected clients
                     for _, client_writer in clients.items():
@@ -64,14 +78,14 @@ async def handler(reader, writer):
                                 client_writer.write(command.encode() + b"\r\n")
                                 await client_writer.drain()
                             except ConnectionError:
-                                print(f"Connection to {client_writer.get_extra_info('peername')} closed while sending")
+                                logger.info(f"Connection to {client_writer.get_extra_info('peername')} closed while sending")
 
     except asyncio.exceptions.CancelledError:
-        print(f"Connection with {client_address} closed")
+        logger.error(f"Connection with {client_address} closed")
     except SocketError as e:
-        print(f"Connection with {client_address} reset: {e}")
+        logger.error(f"Connection with {client_address} reset: {e}")
     except Exception as e:
-        print(f"Error with {client_address}: {e}")
+        logger.error(f"Error with {client_address}: {e}")
 
 
 async def run_server(host: str, port: int) -> None:
@@ -83,11 +97,15 @@ async def run_server(host: str, port: int) -> None:
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        print("Usage: python -m server <HOST> <PORT>")
+    if len(sys.argv) != 4:
+        logger.critical(f"Usage: {sys.argv[0]} <HOST> <PORT> <LOG_LEVEL>")
         sys.exit(1)
 
-    host = sys.argv[1]
-    port = int(sys.argv[2])
+    HOST, PORT, LOG_LEVEL = sys.argv[1], int(sys.argv[2]), sys.argv[3]
 
-    asyncio.run(run_server(host, port))
+    log_level = log_levels.get(LOG_LEVEL, logging.INFO)
+    logger.setLevel(log_level)
+
+    logger.info(f"Local Server {VERSION}")
+
+    asyncio.run(run_server(HOST, PORT))
