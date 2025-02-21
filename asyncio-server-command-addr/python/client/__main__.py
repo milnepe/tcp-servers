@@ -7,6 +7,7 @@ The connection can be closed by entering the "STOP" command.
 
 Usage:
     python -m client <HOST> <PORT>
+    python -m client 127.0.0.1 65432 
 """
 
 import asyncio
