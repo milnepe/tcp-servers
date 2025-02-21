@@ -1,0 +1,56 @@
+# Run the mesh_local_control example
+
+# Change to working dir
+cd ~/<workdir>
+
+# Set the idf environment for Mesh-Lite
+# Last command should display no errors
+. ~/.bashrc
+set_idf_mltools
+get_idf_ml
+
+# Change to example dir
+cd mesh_local_control
+
+# Comment out component path setting in main/idf_component.yml
+    # Please comment the following line, if this example is installed by idf.py create-project-from-example.
+    #override_path: "../../../components/mesh_lite"
+
+# Start VSCode from example dir - CLOSE all popups when it opens!!
+code .
+
+# In VSCode select the ESP-IDF extension and choose Advanced -> Configure ESP-IDF Extension
+
+# Configure Espressif IDF extension
+# Configure extension -> Use Existing Setup -> Search ESP-IDF in system
+# Set the IDF, tools and python env to the ones in the esp-mesh-lite dir
+# Set the paths etc then click Install
+# This will pull any remaining tools into the .espressif dir
+# ESP-IDF shows as v5.3.2 in VSCode menu bar
+
+# Set target device
+# esp32 -> ESP-WROVER-KIT 3.3V
+
+# Configure the example - if you cant open menuconf due to errors, check the override is commented out
+# and manually delete the build dir
+# Configure (menuconfig) -> Example Configuration
+# Set Router SSID, Router Password, Server IP address, Server Port
+# Save configuration
+
+# Build
+# There are some warning that can be ignored
+
+# Flash
+# Set serial port -> /dev/ttyUSB0
+# Set UART method -> UART
+ 
+# Open the Monitor to view output
+
+# Start the server
+
+# Run the bash script
+./blink.sh <host> <port>
+
+The onboard LED should start blinking
+
+

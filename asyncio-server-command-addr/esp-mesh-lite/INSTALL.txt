@@ -1,0 +1,106 @@
+# Mesh-Lite requires specific versions of the ESP-IDF to compile
+# Make a separate dir to hold the mesh-lite environment as it requires
+# a specific esp-idf version (master) which patches the idf.
+
+# Create top-level dir
+mkdir ~/esp-mesh-lite && cd ~/esp-mesh-lite
+
+# Clone the esp-idf (master)
+#git clone --recursive https://github.com/espressif/esp-idf.git
+git clone -b v5.3.2 --recursive https://github.com/espressif/esp-idf.git esp-idf-v5.3.2
+#cd esp-idf-v5.3.2/
+
+# Set IDF_PATH in ~/.bashrc
+export IDF_PATH=$HOME/esp-mesh-lite/esp-idf-v5.3.2
+. ~/.bashrc
+
+# Updating to a Release Branch
+cd $IDF_PATH
+git fetch
+git checkout release/v5.3
+git pull
+git submodule update --init --recursive
+
+# Move back up to ESP top-level dir
+cd ~/esp-mesh-lite
+
+# Clone mesh-lite
+git clone --depth 1 https://github.com/espressif/esp-mesh-lite.git
+cd esp-mesh-lite/
+git submodule update --init --depth 1
+
+# Move back up to ESP top-level dir
+cd ~/esp-mesh-lite
+
+# Create separate dir for idf tools
+mkdir .espressif
+
+# Check structure
+tree -aL 1
+.
+├── esp-idf-v5.3.2
+├── esp-mesh-lite
+└── .espressif
+
+# Install idf tools - all tools for esp32 modules
+cd $IDF_PATH
+export IDF_TOOLS_PATH="$HOME/esp-mesh-lite/.espressif"
+./install.sh all
+
+# Configure esp-idf environment for Mesh-Lite
+# Add the following aliases to ~/.bashrc
+alias set_idf_mltools='export IDF_TOOLS_PATH=$HOME/esp-mesh-lite/.espressif'
+alias get_idf_ml='. $IDF_PATH/export.sh'
+
+# Check from top-level
+cd ~/esp-mesh-lite
+. ~/.bashrc
+set_idf_mltools
+echo $IDF_TOOLS_PATH
+/home/pete/esp-mesh-lite/.espressif
+get_idf_ml
+...
+  /home/pete/esp-mesh-lite/esp-idf-v5.3.2/tools
+Done! You can now compile ESP-IDF projects.
+...
+
+# Check IDF version
+idf.py --version
+ESP-IDF v5.3.2-667-gc09aadf60c-dirty
+
+*****************************************************************************************
+
+# Updating to a Release Branch - https://docs.espressif.com/projects/esp-idf/en/v5.4/esp32/versions.html#updating-to-a-release-branch
+# Release/v5.3
+
+# Check current branch
+cd $IDF_PATH
+git branch
+* release/v5.3
+
+# Update repo 
+git fetch
+git branch -a
+git checkout release/v5.3
+git pull
+git submodule update --init --recursive
+ 
+# Remove tools dir and make a new one
+cd ..
+rm -Rf .espressif
+mkdir .espressif
+
+# Setup new tools
+set_idf_mltools
+cd $IDF_PATH
+./install.sh all
+get_idf_ml
+#. ./export.sh
+idf.py --version
+ESP-IDF v5.3.2-667-gc09aadf60c-dirty
+
+ 
+ 
+
+
+
