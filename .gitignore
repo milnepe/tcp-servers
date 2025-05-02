@@ -1,6 +1,6 @@
 # esp-idf
-.vscode
 managed_components/
+sdkconfig*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
